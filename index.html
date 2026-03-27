@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- MENU -->
+<div id="screen-menu" class="screen active">
+  <div class="logo">TETRIS</div>
+  <div class="logo-sub">RETRO ARCADE EDITION</div>
+  <div class="menu-box">
+    <button class="menu-btn primary" onclick="startGame()">▶ &nbsp;BOSHLASH</button>
+    <button class="menu-btn" onclick="showScreen('settings')">⚙ &nbsp;SOZLAMALAR</button>
+    <button class="menu-btn" onclick="showScreen('howto')">? &nbsp;QANDAY O'YNASH</button>
+    <div class="hi-box">
+      <div class="hi-label">◆ ENG YUQORI BALL ◆</div>
+      <div class="hi-val" id="menu-hi">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW TO -->
+<div id="screen-howto" class="screen">
+  <div class="s-title">QANDAY O'YNASH</div>
+  <div class="s-box">
+    <div class="htg">
+      <div class="htc"><div class="htc-t">HARAKAT</div><div class="htc-b">◄ ► Chapga/O'nga<br>▼ Sekin tushir<br>▼▼ Tez tushir</div></div>
+      <div class="htc" style="background:rgba(155,77,255,.04)"><div class="htc-t">BOSHQARUV</div><div class="htc-b">↻ Aylantir<br>⏸ To'xtat<br>✕ Menyu</div></div>
+      <div class="htc" style="background:rgba(0,255,136,.04)"><div class="htc-t">BALLAR</div><div class="htc-b">1 qator = 100<br>2 qator = 300<br>3 qator = 500<br>4 qator = 800</div></div>
+      <div class="htc" style="background:rgba(255,204,0,.04)"><div class="htc-t">MAQSAD</div><div class="htc-b">Qatorlarni to'ldiring<br>Daraja oshiring<br>Rekord qo'ying!</div></div>
+    </div>
+    <button class="back-btn" onclick="showScreen('menu')">◄ &nbsp;ORTGA</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="screen-settings" class="screen">
+  <div class="s-title">SOZLAMALAR</div>
+  <div class="s-box">
+    <div class="s-row">
+      <div><div class="s-name">Musiqa</div><div class="s-desc">Fon musiqasi</div></div>
+      <label class="toggle"><input type="checkbox" id="set-music" checked onchange="applySettings()"><div class="tog-t"></div><div class="tog-th"></div></label>
+    </div>
+    <div class="s-row">
+      <div><div class="s-name">Ovoz effektlari</div><div class="s-desc">O'yin tovushlari</div></div>
+      <label class="toggle"><input type="checkbox" id="set-sfx" checked onchange="applySettings()"><div class="tog-t"></div><div class="tog-th"></div></label>
+    </div>
+    <div class="s-row">
+      <div><div class="s-name">Musiqa ovozi</div></div>
+      <div class="slid-w">
+        <input type="range" id="set-mvol" min="0" max="100" value="40" oninput="document.getElementById('mv-v').textContent=this.value+'%';applySettings()">
+        <div class="slid-v" id="mv-v">40%</div>
+      </div>
+    </div>
+    <div class="s-row">
+      <div><div class="s-name">SFX ovozi</div></div>
+      <div class="slid-w">
+        <input type="range" id="set-svol" min="0" max="100" value="70" oninput="document.getElementById('sv-v').textContent=this.value+'%';applySettings()">
+        <div class="slid-v" id="sv-v">70%</div>
+      </div>
+    </div>
+    <div class="s-row">
+      <div><div class="s-name">Boshlang'ich daraja</div></div>
+      <div class="lvl-btns" id="lvl-btns">
+        <button class="lvl-btn active" onclick="setLvl(1)" data-l="1">1</button>
+        <button class="lvl-btn" onclick="setLvl(2)" data-l="2">2</button>
+        <button class="lvl-btn" onclick="setLvl(3)" data-l="3">3</button>
+        <button class="lvl-btn" onclick="setLvl(4)" data-l="4">4</button>
+        <button class="lvl-btn" onclick="setLvl(5)" data-l="5">5</button>
+      </div>
+    </div>
+    <div class="s-row">
+      <div><div class="s-name">Ghost piece</div><div class="s-desc">Tushish joyini ko'rsatish</div></div>
+      <label class="toggle"><input type="checkbox" id="set-ghost" checked onchange="applySettings()"><div class="tog-t"></div><div class="tog-th"></div></label>
+    </div>
+    <button class="back-btn" onclick="showScreen('menu')">◄ &nbsp;ORTGA</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <!-- HUD -->
+  <div class="top-bar">
+    <div class="stat"><div class="stat-lbl">BALL</div><div class="stat-v" id="sc">0</div></div>
+    <div class="stat"><div class="stat-lbl">DARAJA</div><div class="stat-v g" id="lv">1</div></div>
+    <div class="stat"><div class="stat-lbl">QATOR</div><div class="stat-v y" id="ln">0</div></div>
+    <div class="stat"><div class="stat-lbl">REKORD</div><div class="stat-v y" style="font-size:12px" id="hi">0</div></div>
+    <button class="pause-btn" onclick="togglePause()">⏸</button>
+  </div>
+
+  <!-- Board + side -->
+  <div class="game-area">
+    <div class="board-wrapper">
+      <canvas id="game-canvas"></canvas>
+      <div class="corner tl"></div><div class="corner tr"></div>
+      <div class="corner bl"></div><div class="corner br"></div>
+      <!-- Pause -->
+      <div class="game-overlay" id="pause-ov">
+        <div class="ov-title">PAUZA</div>
+        <button class="ov-btn" onclick="togglePause()">▶ DAVOM ETISH</button>
+        <button class="ov-btn red" onclick="exitToMenu()">✕ MENYUGA</button>
+      </div>
+      <!-- Game over -->
+      <div class="game-overlay" id="go-ov">
+        <div class="ov-title red">O'YIN TUGADI</div>
+        <div class="ov-info">BALL: <span id="fin-sc">0</span></div>
+        <div class="ov-info">REKORD: <span id="fin-hi">0</span></div>
+        <button class="ov-btn" onclick="startGame()" style="margin-top:6px">↺ QAYTA</button>
+        <button class="ov-btn red" onclick="exitToMenu()">✕ MENYUGA</button>
+      </div>
+    </div>
+    <!-- Side -->
+    <div class="side-info">
+      <div class="info-box">
+        <div class="info-lbl">KEYINGI</div>
+        <canvas id="next-canvas" width="60" height="56"></canvas>
+      </div>
+      <div class="info-box">
+        <div class="info-lbl">VAQT</div>
+        <div class="info-v y" id="tm">00:00</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOUCH CONTROLS -->
+  <div class="touch-controls">
+    <!-- Row 1: Rotate + Hard Drop -->
+    <div class="ctrl-row">
+      <button class="ctrl-btn btn-rotate" id="btn-rotate">↻</button>
+      <button class="ctrl-btn btn-drop" id="btn-drop">▼▼ &nbsp;TUSHIR</button>
+    </div>
+    <!-- Row 2: Left, Soft down, Right -->
+    <div class="ctrl-row">
+      <button class="ctrl-btn btn-move" id="btn-left">◄</button>
+      <button class="ctrl-btn btn-soft" id="btn-down" style="font-size:18px">▼</button>
+      <button class="ctrl-btn btn-move" id="btn-right">►</button>
+    </div>
+  </div>
+</div>
+<script src="scripts.js"></script>
+</body>
+</html>
+
